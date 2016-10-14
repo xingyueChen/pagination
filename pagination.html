@@ -1,2 +1,166 @@
-ssssssssssssssssssssssssssssssss
-ssssssssssss
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+	<title>Bootstrap</title>
+	<link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">  
+	<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<ul class="pagination pagination-lg">
+	<li class="pre"><a href="#">&laquo;</a></li>
+	<li class="page active"><a href="#">1</a></li>
+	<li class="page"><a href="#">2</a></li>
+	<li class="page"><a href="#">3</a></li>
+	<li class="page"><a href="#">4</a></li>
+	<li class="page"><a href="#">5</a></li>
+	<li class="next"><a href="#">&raquo;</a></li>
+</ul><br/>
+<div class="rows" id="context">
+</div>
+<script>
+$.fn.pagination = function(elID,option){
+	//===$this可以去到调用元素
+	var defaultOptions={
+		currentPage:1,
+		selectPage:1,
+		maxPage:1,
+		rangePage:5,
+		refreshPages:function(page){
+			if(page < 1){
+				$("#"+elID).html("no datas have been found");
+			}else{
+				//$.ajax({});==get the datas of the required page
+				$("#"+elID).html("this is page: "+page);
+			}
+		}
+	},base={};
+	base.el = $(this);
+	base.optionSet = $.extend({},defaultOptions,option);
+	base.createPages = function(page){
+		base.optionSet.refreshPages(page);
+		var htmlPre = '<li class="pre"><a href="#">&laquo;</a></li>';
+		base.el.html(htmlPre);
+		base.el.children(".pre").on("click",function(){
+			if(page == 1){
+				alert("the first page");
+				return;
+			}else{
+				base.createPages(page-1);
+			}
+		});
+		base.creatShowPages(page);
+		var htmlNext = '<li class="next"><a href="#">&raquo;</a></li>';
+		base.el.append(htmlNext);
+		base.el.children(".next").on("click",function(){
+			if(page == base.optionSet.maxPage){
+			    alert("the last page");
+				return;
+			}else{
+				base.createPages(page+1);
+			}
+		});
+	};
+	base.creatShowPages = function(page){
+		var html='';
+		if(base.optionSet.maxPage <= base.optionSet.rangePage){			
+			for(var i=1;i<=base.optionSet.maxPage;i++){
+				if(i == page){
+					html+='<li class="page active"><a href="#">'+i+'</a></li>';
+				}else{
+					html+='<li class="page"><a href="#">'+i+'</a></li>';
+				}
+			}
+		}else{
+			var minNoRan = base.optionSet.rangePage-2,
+				maxnoRan = base.optionSet.maxPage+2-base.optionSet.rangePage;
+			if(page <= minNoRan){
+				for(var m = 1;m<=minNoRan+1;m++){	
+					var tpage='';
+					if(m == page){
+						tpage+='<li class="page active"><a href="#">'+m+'</a></li>';
+					}else{
+						tpage+='<li class="page"><a href="#">'+m+'</a></li>';
+					}
+					html+=tpage;				
+				}
+				html+='<li class="lost"><a href="#">...</a><li class="page"><a href="#">'+
+						base.optionSet.maxPage+'</a></li></li>';
+			}else if(page >= maxnoRan){
+				html+='<li class="page"><a href="#">1</a></li><li class="lost"><a href="#">...</a></li>';
+				for(var n = maxnoRan;n<=base.optionSet.maxPage;n++){	
+					var tpage='';
+					if(n == page){
+						tpage+='<li class="page active"><a href="#">'+n+'</a></li>';
+					}else{
+						tpage+='<li class="page"><a href="#">'+n+'</a></li>';
+					}
+					html+=tpage;				
+				}
+			}else{
+				var followPage = parseInt((base.optionSet.rangePage-2)/2);
+				beginPage = ((page-followPage)<=1?1:page-followPage),
+				endpage = ((page+followPage)>=base.optionSet.maxPage?base.optionSet.maxPage:page+followPage);
+				if(beginPage > 2){
+					html+='<li class="page"><a href="#">1</a></li><li class="lost"><a href="#">...</a></li>';
+				}
+				for(var j = beginPage;j<=endpage;j++){	
+					var tpage='';
+					if(j == page){
+						tpage+='<li class="page active"><a href="#">'+j+'</a></li>';
+					}else{
+						tpage+='<li class="page"><a href="#">'+j+'</a></li>';
+					}
+					html+=tpage;				
+				}
+				if(endpage < (base.optionSet.maxPage-1)){
+					html+='<li class="lost"><a href="#">...</a><li class="page"><a href="#">'+
+					base.optionSet.maxPage+'</a></li></li>';
+				}
+			}
+		}
+		base.el.append(html);
+		
+		base.page = base.el.find(".page");
+		base.page.on("click",function(){			
+			//==change the page of showed
+			if($(this).hasClass("active")){
+				return;
+			}
+			var ckpage = parseInt($(this).children().html());			
+			base.createPages(ckpage);
+		});
+	};
+	base.init = function(){		
+		//inilize the oraginal pages			
+	    //===set the min page range of 5
+		try{
+			if(base.optionSet.rangePage < 5){
+				throw "Err1";
+			}
+		}catch(er){
+			if(er=="Err1"){
+				alert("You need set the rangePage >= 5!")
+			}
+			return ;
+		}
+		if(base.optionSet.maxPage <= 1){
+			base.optionSet.refreshPages(base.optionSet.maxPage);
+			base.el.removeAll();
+			return;
+		}else{
+			base.optionSet.refreshPages(1);
+		    base.createPages(1);			
+		};	
+	};
+	base.init();
+}
+
+$(function(){
+	$(".pagination").pagination("context",{maxPage:6,rangePage:5});
+});
+</script>
+</body>
+</html>
